@@ -1,0 +1,26 @@
+Package: TPD
+Type: Package
+Title: Methods for Measuring Functional Diversity Based on Trait
+        Probability Density
+Version: 0.1.2
+Date: 2017-11-08
+Author: Carlos P. Carmona <perezcarmonacarlos@gmail.com>
+Maintainer: Carlos P. Carmona <perezcarmonacarlos@gmail.com>
+Description: Tools to calculate trait probability density functions (TPD) at
+    any scale (e.g. populations, species, communities). TPD functions are used to compute
+    several indices of functional diversity, as well as its partition across scales.
+    These indices constitute a unified framework that incorporates the underlying
+    probabilistic nature of trait distributions into uni- or multidimensional
+    functional trait-based studies. See Carmona et al. (2016) <doi:10.1016/j.tree.2016.02.003> for
+    further information.
+License: GPL-3
+LazyData: TRUE
+Depends: ggplot2 (>= 1.0.0), ks (>= 1.9.2)
+Imports: gridExtra (>= 0.9.1), mvtnorm (>= 0.8), graphics, stats
+Suggests: knitr, testthat
+VignetteBuilder: knitr
+RoxygenNote: 6.0.1
+NeedsCompilation: no
+Packaged: 2017-11-09 07:53:49 UTC; carlosperezcarmona
+Repository: CRAN
+Date/Publication: 2017-11-09 11:30:28 UTC

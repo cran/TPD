@@ -1,0 +1,534 @@
+---
+title: "TPD: Functional Diversity based on Trait Probability Density"
+author: "Carlos P. Carmona"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{TPD: Functional Diversity based on Trait Probability Density}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+This document illustrates the use of the package **TPD** for calculating several aspects of the functional diversity of biological communities. The functions  included in **TPD** are based on the the trait probability densities of populations and species (*TPDs*), and its extension to communities (*TPDc*). These methods allow estimating several components of functional diversity and to partition it across scales. This collection of methods constitutes a unified framework that incorporates the underlying probabilistic nature of trait distributions in a uni- or multivariate trait space.
+
+<a name="Intro"></a>
+
+##The probabilistic nature of functional diversity
+
+The collection of species that compose a community display a variety of trait values that conform a multivariate distribution of traits. As early as 1957, Hutchinson proposed his concept of niche, which is the multidimensional hypervolume in which a species can maintain a population. Hutchinsonian hypervolumes are generally conceived as uniform features, and all the points contained within them are assigned an equal probability of persistence of the species. Conseuquently, these hypervolumes can be characterised by their boundaries.
+
+Nevertheless, this is not a totally satisfying conception, because some parts of the niche of a species present better conditions for subsistence than others. In correspondence, niches of species are usually described, conceived and represented as probability density functions. The same representation is generally applied to the trait distributions of species, reflecting the fact that individuals of a given species have some degree of variability in their trait values, and that some trait values (or combinations of trait values in the case of multiple traits) are more likely than others, just as it is more likely to find a 1.70 m tall person than a 2.10 m tall one.
+
+Despite this, most methods analysing the functional diversity of communities are based on the consideration of a single value for each species and trait (the average values of each species for each trait), most species display non-negligible differences in the traits of their individuals. Probability density functions can be used to reflect the unequal probabilities of different trait values. Throughout this vignette, and in the **TPD** package, we will refer to these functions as Trait Probability Density (TPD).
+
+Consider for instance the dataset `trees`, contained in the package `datasets` of R. It contains `r nrow(trees)` observations of the  girth, height and volume of black cherry trees. Let us calculate the TPD of the height for this population of cherry trees:
+
+```{r echo=FALSE, warning=FALSE, message = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(TPD)
+library(ks)
+library(ggplot2)
+library(gridExtra)
+```
+
+```{r, echo=TRUE}
+kde_height <- density(trees$Height)
+plot(kde_height, main = "TPD height")
+```
+
+The plot shows clearly that heights around 75 ft are much more likely than  heights higher than 90 ft.
+
+Because TPD's are probability density functions, they integrate to 1, which means that the area under the plotted curve equals 1. To calculate this integral, we first expand a bit the range of traits of the database --we consider values between 50 and 100 ft; we want to be sure that our interval encompasses all the distribution--, and divide the trait axis into equal-length intervals. Although it is best to use a high number of intervals, in this example, for the sake of visibility, we have divided it into 50 intervals:
+
+```{r, echo=TRUE}
+grid <- seq(from = 50, to = 100, length.out = 50)
+edge_length <- grid[2] - grid[1] 
+#Each interval has this size (in trait units):
+edge_length
+```
+
+Now, let us evaluate the TPD function in each point of the grid. 
+
+```{r, echo=TRUE}
+kde_height <- density(trees$Height, from = 50, to = 100, n = 50)
+plot(kde_height, main = "TPD height")
+points(kde_height$x, kde_height$y, pch = 16, col = 2 , cex=0.6)
+abline(v = grid, col = "grey50", lwd = 0.3)
+```
+
+The sum of the areas of all the rectangles with base `edge_length` = `r round(edge_length,2)`, and height equal to the value of the TPD function evaluated in each point of the grid is:
+
+```{r, echo=TRUE}
+sum(edge_length * kde_height$y)
+```
+
+Which is roughly 1! The **TPD** package uses kernel density estimations procedures to calculate the TPD of populations (when trait information of species is available at different locations, eg. different habitats) or species (when trait information of species is available at different points, and we assume a single TPD for the species regardless of location). We refer to these functions as TPDs. Because of the multidimensional nature of traits, the package allows estimating TPDs for single or multiple traits, with the function `TPDs`, which makes use of the kernel density estimation functions of the package **ks**. `TPDs` estimates a TPDs for each species or population included in the data. 
+
+<a name="TPDs"></a>
+
+##The `TPDs` function
+
+To illustrate the use of `TPDs`, we are going to use the database `iris`, which contains measurements (in cm) of the sepal length and width and petal length and width, for 50 flowers from each of 3 species of *Iris* (*I. setosa*, *I. versicolor*, and *I. virginica*)
+
+```{r, echo=TRUE}
+head(iris)
+```
+
+Suposse that we want to calculate the TPDs of each species considering `Sepal.Length` and `Sepal.Width`. Estimating these TPDs's is very simple:
+
+```{r, echo=TRUE}
+traits_iris <- iris[, c("Sepal.Length", "Sepal.Width")]
+sp_iris <- iris$Species
+TPDs_iris <- TPDs(species = sp_iris, traits_iris)
+```
+
+After a few seconds of calculations, the object `TPDs_iris` is created. This  object, of class `r class(TPDs_iris)` contains, along with other information, the grid of cells in which the function was evaluated, contained in `TPDs_iris$data$evaluation_grid`, and the probability associated to each of those cells, contained in a list `TPDs_iris$TPDs` with one element for each species:
+
+```{r echo=T}
+head(TPDs_iris$data$evaluation_grid)
+nrow(TPDs_iris$data$evaluation_grid) 
+names(TPDs_iris$TPDs)
+head(sort(TPDs_iris$TPDs$setosa, decreasing = TRUE))
+sum(TPDs_iris$TPDs$setosa)
+```
+
+There are a lot of cells in the grid, resulting from dividing each axis into 200 equal intervals. This number could be modified with the argument `n_divisions` of `TPDs`, which defaults to 200 for 2 dimensions, but increasing it results in higher computation times (because the number of cells increases exponentially with dimensions), with rather insignificant improvements in accuracy. Most importantly, `TPDs_iris` contains the TPDs of the three species (in `TPDs$TPDs`), which are vectors containing the probability associated to each  point of the evaluation grid:
+
+```{r echo=T}
+summary(TPDs_iris$TPDs)
+# The sum of all the elements in each TPDs is equal to 1:
+sapply(TPDs_iris$TPDs, sum)
+```
+
+The function `plotTPD` can be used to visualize the resulting TPDs's. Note that it can only handle 1 or 2-dimensional data, and that in the case of 2 dimensional plots, the packages **gridExtra** and **ggplot2** must be installed.
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+plotTPD(TPD = TPDs_iris, nRowCol = c(1,3)) 
+```
+
+Now that we are able to visualize TPD's, we are going to show an important aspect of their construction: alpha. The parameter `alpha` determines the proportion of the probability density function of each species or population that will be included in the resulting TPD (Blonder et al. 20114; Swanson et al. 2015). This means that setting `alpha = 1` will include the whole function, whereas `alpha = 0.5` will include only a 50%. It is important to remarks that in the cases in which `alpha` is set to a value smaller than 1, the `TPD` function rescales the probabilities so that they add up to 1. By default, `alpha` is set to 0.95; thus `TPDs` is not too sensitive to outliers. Let us visualize the effect of alpha in the calculation of a 1-dimensional TPD. First, lets set `alpha = 1`:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+traits_iris_d1 <- iris[, c("Sepal.Length")]
+sp_iris <- iris$Species
+TPDs_iris_d1_a1 <- TPDs(species = sp_iris, traits = traits_iris_d1, alpha=1)
+plotTPD(TPD = TPDs_iris_d1_a1, nRowCol = c(1,3)) 
+```
+
+Now, `alpha = 0.95`, the default value:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+TPDs_iris_d1_a095 <- TPDs(species = sp_iris, traits = traits_iris_d1, alpha=0.95)
+plotTPD(TPD = TPDs_iris_d1_a095, nRowCol = c(1,3)) 
+```
+
+And this is how `alpha = 0.5` looks like:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+TPDs_iris_d1_a05 <- TPDs(species = sp_iris, traits = traits_iris_d1, alpha=0.5)
+plotTPD(TPD = TPDs_iris_d1_a05, nRowCol = c(1,3)) 
+```
+
+Indeed, the same logic applies for higher dimensions:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+TPDs_iris_a95 <- TPDs(species = sp_iris, traits = traits_iris, alpha=0.95)
+plotTPD(TPD = TPDs_iris_a95, nRowCol = c(1,3)) 
+```
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+TPDs_iris_a75 <- TPDs(species = sp_iris, traits = traits_iris, alpha=0.75)
+plotTPD(TPD = TPDs_iris_a75, nRowCol = c(1,3)) 
+```
+
+(NOTE: Be careful when making 2 dimensional plots. If you try to plot too many species or populations at the same time, it can take quite a long time. We recommend to use the argument `whichPlot` in `PlotTPD` to control for this.)
+
+As we mentioned above, sometimes there is trait information at the popolation level. Imagine that we have measured traits on individuals of each species in two different environments. The argument `samples` of `TPDs` allows us to calculate a separate TPDs for each population of each species. For example, suppose that the first 25 observation of each species belong to "Site.1" and the other 25 belong to "Site.2".
+
+```{r echo=T, fig.width = 5, fig.height = 7}
+pops_iris <- rep(c(rep("Site.1", 25), rep("Site.2", 25)), 3)
+TPDs_pops_iris <- TPDs (species = sp_iris, traits = traits_iris, samples = pops_iris)
+plotTPD(TPD = TPDs_pops_iris, nRowCol = c(3,2)) 
+```
+
+Because the assignment of individuals to sites in this example is somewhat random, there are not important differences in the TPDs of populations of the same species. However, in real conditions, differences in the functional traits between conspecifics living under different conditions can be substantial, and therefore it is important to take this aspect into account (Carmona et al. 2015).
+
+The `TPDs` function requires a high quantity of information to work: one measurement per individual and trait cosidered, and all the traits must be measured in all individuals in order to place them in the multidimensional space. In addition, several individuals are required to estimate reliable TPDs's. In many occasions, we do not have access to such a high-quality information. The `TPDsMean` function is designed for those cases. `TPDsMean` performs the same task as `TPDs`, but it estimates the probabilities by calculating  a multivariate normal distribution for each species or population, rather than using kernel density estimations. Hence, the only information required is the mean and standard deviation of each trait considered for each species or population. Let us imagine that we only have the means and standard deviations of the iris species:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+names_iris <- unique(iris$Species)
+mt1 <- tapply(iris[, "Sepal.Length"], iris$Species, mean)
+mt2 <- tapply(iris[, "Sepal.Width"], iris$Species, mean)
+means_iris <- matrix(c(mt1, mt2), ncol=2)
+st1 <- tapply(iris[, "Sepal.Length"], iris$Species, sd)
+st2 <- tapply(iris[, "Sepal.Width"], iris$Species, sd)
+sds_iris <- matrix(c(st1, st2), ncol=2)
+TPDsMean_iris<- TPDsMean(species = names_iris, means = means_iris, sds = sds_iris)
+plotTPD(TPD = TPDsMean_iris, nRowCol = c(1,3))
+```
+
+
+<a name="TPDc"></a>
+
+## `TPDc`: from species to communities
+
+One interesting feature of TPD's is that the concept presented above for species or pupulations can be easily scaled up to express the functional structure of communities. This is the goal of the function `TPDc`. `TPDc` combines  the information contained in the TPDs of the species in the community with information about their abundances, resulting in the Trait Probabiity Density of the community (which we called *TPDc*). The rationales is very simple: for  each cell of the grid in which the functional space is divided, TPDc is the result of summing the probability of each of the species present in the community,weighted by their relative abundances.  
+
+We can illustrate this concept with the `iris` example. Let us imagine three different communities containing different abundances of each species:
+
+```{r echo=T}
+
+abundances_comm_iris <- matrix(c(c(0.5, 0.4, 0), #I. virginica absent
+                          c(0.0, 0.9,  0.1 ), #I. versic. dominates; setosa absent
+                          c(0.0, 0.1,  0.9 )), #I. virg. dominates; setosa absent
+                          ncol = 3, byrow = TRUE, dimnames = list(paste0("Comm.",1:3),
+                          unique(iris$Species))) 
+                 
+```
+
+To calculate the TPDc's of a group of communities, we first have to calculate 
+the TPDs of **all** the species present in each community. (This step is  important: if you do not have the TPDs of all the species or populations, you cannot estimate the TPDc of the community, and `TPDc` will end with an error).  
+
+```{r echo=T}
+TPDs_iris <- TPDs(species = sp_iris, traits_iris)
+TPDc_iris <- TPDc(TPDs = TPDs_iris, sampUnit = abundances_comm_iris )
+```
+
+The resulting object (`TPDc_iris`) is an object of class `r class(TPDc_iris)`, containing several pieces of information inherited from `TPDs_iris`, such as  the coordinates of the evaluation grid (in `TPDc_iris$data$evaluation_grid`).  
+
+What is new in this object is the information contained in its component `$TPDc`. Specifically, we are interested in the element `TPDc_iris$TPDc$TPDc`, which is a  list with an element for each community (`length(TPDc_iris$TPDc$TPDc) =`  `r length(TPDc_iris$TPDc$TPDc)`), each one containing the probability associated to each cell of the grid in each community. In fact, the TPDc of a community reflects the probability of observing a given trait value when extracting a random individual from the community. Because TPDc's are probability density functions, they integrate to 1:
+
+```{r echo=T}
+sapply(TPDc_iris$TPDc$TPDc, sum)
+```
+
+(NOTE: the probabilities contained in a TPDc will always sum 1, regardless of the values of abundance provided to the `TPDc` function, which are automatically transformed to relative abundances)
+
+Similar to what we did with TPDs's, `plotTPD` can be used to provide a graphical representation of TPDc's of 1 or 2 dimensions. Let us examine the three communities:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+plotTPD(TPD = TPDc_iris, nRowCol = c(1,3))
+```
+
+The plots clearly reflect our expectations when we created the communities: the part of the functional space occupied by *I. setosa* is empty in Comm.2 and Comm.3,  where that species is not present. In addition, Comm.2 and Comm.3, which share  the same two species (*I. versicolor* and *I. virginica*), occupy the same part of the functional space. However, because of the different abundances of  their species, the TPDc's of these communities differ, reflecting the higher abundance of *I. versicolor* in Comm. 2 and of *I. virginica* in Comm.1.
+
+<a name="Intro_Framework"></a>
+
+## A unified framework for functional diversity
+
+TPDs's and TPDc's are powerful tools for studying the functional diversity of biological communities. The **TPD** package includes several functions that estimate different indices reflecting complimentary aspects of functional diversity. With the aim to help users to select for the most adequate method depending on specific questions, we divide these methods into four different categories attending to two independent criteria. 
+
+The first criteria is whether the identity or number of species is or not of primary concern. In some cases (1),
+we are only interested on the aggregated probability distribution, that is, the TPD of the studied entity (which can be species, populations or communities). For example, if we are interested on how does the ammount of functional volume occupied by communities vary across environmental gradients, we only need to know the TPDc's of communities. In such case,  it would have been correct to sample and measure traits from random individuals in each community, constructing the TPDC’s without having identified any species. By contrast (2), sometimes the interest is not only on the TPD of the community, but on how the different species that compose it are organised in the functional space. This includes the study of functional diversity in terms of the functional  dissimilarity of species, or the study of functional redundancy. 
+
+These two groups can be further divided according to whether (a) we are interested in studying properties only at the within-unit level (units can be species, populations or communities), or (b) we are interested in analysing the differences between these units, for which we have to consider more than one unit simultaneously.
+
+The next table shows the methods that compose the framework, classified according to the above-stated criteria, along with the associated specific functions included in the **TPD** package:
+
+
+|                    | **(1) Interest is *only* on the aggregated probability distribution **                  | **(2) Interest is *not only* on the aggregated probability distribution**             |
+|--------------------|-------------------------------------------------------------|----------------------------------------------------|
+| **(a) Within units**   | Functional Richness, Evenness and Divergence (`REND`)  | Functional redundancy (`redundancy`)     |
+|                    | Traits sampling (`tSamp`)                           | Species dissimilarity (`dissim`)  |
+| **(b) Between units** | Overlap-based dissimilarity (`dissim`)     | Partition of functional diversity with Rao (`dissim` + `Rao`) |
+|                    | Dissimilarity decomposition (`dissim`)     |                                                    |
+
+
+<a name="Grupo-1"></a>
+
+## 1. Species are *not* of primary concern
+
+<a name="Grupo-1a"></a>
+
+### 1.a. Indices for single units
+
+The methods included in this category are intended for cases in which we are purely interested in some feature of the functional structure of individual populations, species or communities. This means that the results yielded for each unit of analysis is totally independent from the rest of units. The methods included here, and the associated functions are:
+
+<a name="REND"></a>
+
+####Functional Richness, Evenness and Divergence (`REND`)
+
+These three indices of functional diversity were originally described by Mason et al. (2005). Because a deeper study of their biological significance is out of the scope of this document, we refer readers to that reference for further details.
+
+**Functional richness (FRic)** is the amount of functional volume occupied by the analysed unit (species/population/community). Therefore, a species with great variability in traits between their individuals will display a higher FRic value than a species with less variability. 
+
+**Functional evenness (FEve)** reflects the evenness of the abundance of the different trait values in the analysed unit. Imagine two communities with the same functional richness (the same degree of variability in traits between their individuals). Suppose that some traits are much more abundant than others in the first species, whereas all the traits have a similar abundance in the second species:  FEve for the second species should be higher than FEve for the first one.
+
+**Functional divergence (FDiv)** reflects the distribution of abundances within the functional trait volume occupied by the analysed unit. A species in which the most abundant trait values are away from the center of gravity of the functional space --eg. individuals are either very small, or very big-- will display high FDiv, whereas a species in which the most abundant trait values are similar --eg. most individuals having intermediate size-- will have low FDiv .
+
+The function `REND` calculates these three indices using the TPDs's and TPDc's of populations/species and communities, respectively. The function works with one or more dimensions, thus expanding the framework presented in Mason et al. (2005) to multiple traits without modifying its original rationale, based on probabilities. Let us start with species with one and two dimensions:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+TPDs_iris_d1 <- TPDs(species = sp_iris, traits_iris_d1)
+RED_d1 <- REND(TPDs = TPDs_iris_d1)
+
+TPDs_iris_d2 <- TPDs(species = sp_iris, traits_iris)
+RED_d2 <- REND(TPDs = TPDs_iris_d2)
+```
+ 
+`RED_d1` and `RED_d2` contain the FRic, FEve and FDiv values of the three species considering one and 2 traits simultaneously. We can plot the respective TPDs's, along with their FRich values:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+plotTPD(TPD = TPDs_iris_d1, nRowCol = c(1, 3), leg.text = paste0(names(RED_d1$species$FRichnes),
+  "; FRic=", round(RED_d1$species$FRichnes, 3)))
+plotTPD(TPD = TPDs_iris_d2, nRowCol = c(1, 3), leg.text = paste0(names(RED_d2$species$FRichnes),
+  "; FRic=", round(RED_d2$species$FRichnes, 3)))
+```
+
+The first thing to underscore is that FRic is given in the original trait units, which means that in the one-dimensional case (`Sepal.Length`), FRic is expressed in cm and in the two dimensional case (`Sepal.Length` and `Sepal.Width`) it is expressed in cm<sup>2</sup>. *I. virginica* is the species that occupies the biggest proportion of the functional space, both for one and two traits, and *I. setosa* the one occupying the smallest proportion. 
+
+The plots also reveal that *I. setosa* occupies a portion of the functional space that is distinct from the ones occupied by the other two species, which are more similar --with *I. versicolor* occupying a slightly more central position than *I. virginica*. We are going to take advantage of this observation to show the calculation of FDiv, and its application to communities. Let us create three communities, with different abundances of each species:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+abundances_comm_iris_divergence <- matrix(c(c(0.45, 0.1, 0.45), # Different species are more abundant
+                          c(0.05, 0.9,  0.05 ),  # Different species are less abundant
+                          c(0.9,  0.05, 0.05 )), # A species with extreme trait values is very abundant
+                          ncol = 3, byrow = TRUE, dimnames = list(paste0("Comm.",1:3),
+                          unique(iris$Species))) 
+
+TPDc_iris_divergence_d1 <- TPDc(TPDs = TPDs_iris_d1, sampUnit = abundances_comm_iris_divergence)
+RED_comm_d1 <- REND(TPDc = TPDc_iris_divergence_d1)
+plotTPD(TPD = TPDc_iris_divergence_d1, nRowCol = c(1, 3), 
+  leg.text = paste0(names(RED_comm_d1$communities$FDivergence),
+  "; FDiv=", round(RED_comm_d1$communities$FDivergence, 3)))
+
+TPDc_iris_divergence_d2 <- TPDc(TPDs = TPDs_iris_d2, sampUnit = abundances_comm_iris_divergence)
+RED_comm_d2 <- REND(TPDc = TPDc_iris_divergence_d2)
+plotTPD(TPD = TPDc_iris_divergence_d2, nRowCol = c(1, 3), 
+  leg.text = paste0(names(RED_comm_d2$communities$FDivergence),
+  "; FDiv=", round(RED_comm_d2$communities$FDivergence, 3)))
+```
+
+Comm.3, with a great proportion of their TPDc being away from the center, displays the highest FDiv value, followed by Comm.1. By contrast, Comm.2, where *I. versicolor* dominates, has the lowest FDiv value. Interestingly, given that the three communities are composed of the same species, they have the same value of FRic, which is independent of species abundances:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+RED_comm_d1$communities$FRichness
+RED_comm_d2$communities$FRichness
+```
+
+To show the use of functional evenness, we are going to create an artificial set composed of two groups of four species each. Species in each group have the same mean trait value, but different variances. For the sake of visibility, we are going to present a one-dimensional example, but the same applies for higher dimensions. 
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+set.seed(1)
+sp_means <- rep(seq(0, 8, length.out = 4), 2)
+sp_sds <- rep(c(0.5, 1), each=4)
+sp_trait <- numeric()
+n_indiv <- 50
+for (i in 1:length(sp_means)) {
+  sp_trait <- c(sp_trait, rnorm(n_indiv, sp_means[i], sp_sds[i]))
+}
+sp_names <- rep(paste0("SP.", 1:length(sp_means)), each=n_indiv)
+TPDs_sp <- TPDs(species = sp_names, traits = sp_trait, alpha = 0.99)
+plotTPD(TPD = TPDs_sp, nRowCol = c(2,4))
+```
+
+Now, lets create four communities, two with the species in the first group, and two with the species in the second group, and examine their FEve values:
+
+```{r echo=T, fig.width = 7, fig.height = 4}
+
+comm_abundances <- matrix(c( c(0.25, 0.25, 0.25, 0.25, 0,    0,    0,    0), #Comm1, goup 1, equal abundances
+                             c(0,    0,    0,    0,    0.25, 0.25, 0.25, 0.25), #Comm2, goup 2, equal abundances
+                             c(0.85, 0.05, 0.05, 0.05, 0,    0,    0,    0), #Comm3, goup 1, unequal abundances
+                             c(0,    0,    0,    0,    0.85, 0.05, 0.05, 0.05)), #Comm4, goup 2, unequal abundances
+                             ncol = 8, byrow = TRUE, dimnames = list(paste0("Comm.",1:4),
+                             unique(sp_names))) 
+
+TPDc_sp <- TPDc(TPDs = TPDs_sp, sampUnit = comm_abundances)
+RED_sp <- REND(TPDc_sp)
+plotTPD(TPDc_sp, nRowCol = c(2,2), leg.text = paste0(names(RED_sp$communities$FEvenness),
+  "; FEve=", round(RED_sp$communities$FEvenness, 3)))
+```
+
+The difference between Comm.1 and Comm.2 reflecs the effect of the evenness in the distribution of probabilities within the species that compose the communities. The probabilities associated to the trait values are generally more even in the species of Comm2 than in those of Comm1, hence the higher value of FEve (`r round(RED_sp$communities$FEvenness, 3)[2]` vs `r round(RED_sp$communities$FEvenness, 3)[1]`). Comm.3 and Comm.4 are composed of the same species than Comm1. and Comm.2, but with uneven relative abundances, thus reflecting the effect of the evenness in the abundance of species. 
+  
+<a name="tSamp"></a>
+  
+####Traits sampling (`tSamp`)
+
+Some applications based on the traits of species require simulating trait values that could be found in a given population, species or community. The function `tSamp` performs this task. Lets say that we want to simulate 1,000 trait values from each *Iris* species:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+Iris_samp <- tSamp(TPDs=TPDs_iris, size=1000)
+```
+
+`Iris_samp` contains three groups of 1,000 simulated trait values, one for each species. As usual, visualizing the results can be useful:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+plotTPD(TPDs_iris, nRowCol = c(1,3))
+par(mfrow=c(1,3))
+for (i in 1:3){
+  plot(Iris_samp$species_samples[[i]], pch = 16, cex = 0.6, 
+    xlim = range(TPDs_iris$data$evaluation_grid[[1]]),
+    ylim = range(TPDs_iris$data$evaluation_grid[[2]]))
+}
+```
+
+Indeed, `tSamp` also works with TPDc's, simulating trait values that could have been drawn from a community. We can recover the object `TPDc_iris` that we created above, draw 1,000 trait values from each community, and plot them:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+Iris_comm_samp <- tSamp(TPDc = TPDc_iris, size = 1000)
+plotTPD(TPDc_iris, nRowCol = c(1,3))
+par(mfrow=c(1,3))
+for (i in 1:3){
+  plot(Iris_comm_samp$communities_samples[[i]], pch = 16, cex = 0.6, 
+    xlim = range(TPDc_iris$data$evaluation_grid[[1]]),
+    ylim = range(TPDc_iris$data$evaluation_grid[[2]]))
+}
+```
+
+<a name="Grupo-1b"></a>
+
+### 1.b. Indices for multiple units
+
+Sometimes one can be interested in the difference in the functional diversity between different units (once again, these can be populations, species or communities), or $\beta$ diversity, rather than on diversity at the single unit scale or $\alpha$ diversity.  Differences between pairs of units can be used to answer a lot of interesting ecological questions. The methods included in this section are useful for that purpose.
+
+<a name="dissim"></a>
+
+#### Overlap-based functional dissimilarity, and its decomposition (`dissim`)
+
+When two species, populations or communities share some part of the functional volume that they occupy, their respectives TPD's must overlap up to some degree. We recommend reading Mouillot et al. (2005), Leps et al. (2006), Geange et al. (2012) or de Bello et al. (2013) as useful references to understand this concept and the related technical, mathematical and ecological details behind the concept of overlap. We are going to rely once again in the `iris` database to illustrate this method. Remember that the object `TPDs_iris_d1` contains the TPDs of the three species for the trait `Sepal.Length`. We are going to plot the three TPDs together:
+
+```{r echo = T, fig.width = 6, fig.height = 4}
+par(mfrow=c(1,1))
+plot(TPDs_iris_d1$data$evaluation_grid, TPDs_iris_d1$TPDs[[1]], type="n", 
+  ylim = c(0,max(sapply(TPDs_iris_d1$TPDs, max))))
+
+for (i in 1:length(TPDs_iris_d1$TPDs)){
+  lines(TPDs_iris_d1$data$evaluation_grid, TPDs_iris_d1$TPDs[[i]], lwd=2, col=i)
+}
+legend("topright", bty = "n", lwd = 2, col = 1:length(TPDs_iris_d1$TPDs),
+  legend = names(TPDs_iris_d1$TPDs))
+```
+
+As we already knew, *I. versicolor* and *I. virginica* are functionally rather similar, as shown by the relatively high overlap between their TPDs's. On the other hand, *I. virginica* and *I. setosa* are very different, with only a very small proportion of their TPDs's overlapping. We can use `dissim` to accurately estimate these differences:
+
+```{r echo = T}
+dissim_iris_d1 <- dissim(TPDs = TPDs_iris_d1)
+dissim_iris_d1$species$dissimilarity
+```
+
+The dissimilarity matrix quantifies our previous intuitions: *I. virginica* and *I. setosa* have a functional dissimilarity of `r round(dissim_iris_d1$species$dissimilarity["setosa", "virginica"], 3)` (with 1 being the maximum possible value for dissimilarity), whereas  the dissimilarity between *I. versicolor* and *I. virginica* is `r round(dissim_iris_d1$species$dissimilarity["versicolor", "virginica"], 3)`. The function works in a similar way for communities and higher dimensions. We can recreate the object `TPDc_iris`:
+
+```{r echo = T, fig.width = 7, fig.height = 3}
+abundances_comm_iris <- matrix(c(c(0.9, 0.1, 0), #I. setosa dominates; virg. absent 
+                          c(0.0, 0.9,  0.1 ), #I. Versic. dominates; setosa absent
+                          c(0.0, 0.0,  1 )), #Only I. virg. present
+                          ncol = 3, byrow = TRUE, dimnames = list(paste0("Comm.",1:3),
+                          unique(iris$Species))) 
+TPDc_iris <- TPDc( TPDs = TPDs_iris, sampUnit = abundances_comm_iris) 
+plotTPD(TPDc_iris, nRowCol = c(1,3))
+dissim_iris_comm <- dissim(TPDc = TPDc_iris)
+dissim_iris_comm$communities$dissimilarity
+```
+
+Comm.1 is very dissimilar to the other two communities, which in turn are rather similar between them. Note, however, that Comm.2 and Comm.3 have a dissimilarity of `r round(dissim_iris_comm$communities$dissimilarity["Comm.2", "Comm.3"], 3)`, in spite of occupying exactly the same region of the functional space. Therefore, the dissimilarity between these communities is entirely due to differences in the evennes of the distribution of traits between the communities, rather than to differences in the parts of the functional space occupied by each community. The other two elements of the `dissim_iris_comm` object reflect this fact: dissimilarity between two TPD's can be decomposed into two complementary components. The first component is due to dissimilarities in the relative abundances of traits shared by the communities (as in the example between Comm.2 and Comm.3), whereas the other is due to the sections of the functional space that are exclusively occupied by one of the communities, but not by the other. 
+
+```{r echo = T, fig.width = 7, fig.height = 3}
+dissim_iris_comm$communities$P_shared
+dissim_iris_comm$communities$P_non_shared
+```
+
+As we expected, `$P_shared` accounts for all the dissimilarity between Comm.2 and Comm.3. This is because all the species present in Comm.3 are present in Comm.2. Therefore the functional volume occupied by Comm.3 is completely contained (*nested*) within the functional volume occupied by Comm.2. Because the functional volume occupied by Comm.3 is a subset of the functional volume of Comm.2, `$P_shared` is equal to 1. Similarly, the dissimilarity between Comm.1 and Comm.2 is mostly accounted by `$P_shared`, because the most abundant species in Comm.2 is also present in Comm.1, leading to a high level of nestedness. By contrast, the only species present in Comm.3 is not in Comm.1, resulting in a lower (but still substantial) value of `$P_shared`.
+
+<a name="Grupo 2"></a>
+
+## 2. Species *are* of primary concern
+
+<a name="Grupo 2a"></a>
+
+### 2.a. Indices for single units
+
+In this group we include two methods. The first one is functional redundancy. The second one is the calculation of the dissimilarity between the species that compose a community. These dissimilarities can be used afterwards in indices to calculate alpha functional diversity. The calculation of dissimilarities between species has been explained [above](#dissim), so there is no need for further details. Now, we will focus on redundancy. 
+
+<a name="redundancy"></a>
+
+#### Functional redundancy of communities (`redundancy`)
+
+We consider that two species are redundant in a community when they occupy the same functional volume, which means that they have the same traits. Accordingly, if there are two species that are totally redundant in a community, the loss of one of them will not reduce the functional volume occupied by the community (which is indicated by [functional richness](#REND). In reality, communities are usually composed of more than two species, and therefore the concept of redundancy involves the simultaneous consideration of the funcional volumes occupied by each species. 
+
+The method that we implement in the function (`redundancy`), evaluates the number of species that occupy each cell of the grid defining the functional space occupied by the community. Afterwards, it performs a weighted mean for the whole community, using the probability associated to each cell (which are contained in TPDc) as the weighting factor. This gives the average number of species that are present in each cell; if we substract 1 to this number, we get the average number of redundant species in the community as a whole, that is, the average number of species that could be lost without in the community without reducing its functional volume. 
+
+Now that we are familiarized with the `iris` dataset (remember: *I. setosa* is functionally different from *I. versicolor* and *I. virginica*, which are similar), we are going to use it to explore the use of `redundancy`. Let us build a set of communities with different abundances of each species:
+
+```{r echo=T}
+TPDs_iris <- TPDs(species = sp_iris, traits_iris)
+abundances_comm_iris <- matrix(c(c(0.9,  0.05, 0.05), #I. setosa dominates 
+                                 c(0.0,  0.5,  0.5 ), #I. setosa absent
+                                 c(0.33, 0.33, 0.33), #Equal abundances
+                                 c(0.1,  0.45, 0.45), #Versicolor and virginica dominate
+                                 c(0.5,  0,    0.5)), #versicolor absent
+                          ncol = 3, byrow = TRUE, dimnames = list(paste0("Comm.",1:5),
+                          unique(iris$Species))) 
+TPDc_iris <- TPDc( TPDs = TPDs_iris, sampUnit = abundances_comm_iris) 
+```
+
+Communities dominated by *I. setosa* should have a lower redundancy (because that species occupies a  portion of the functional space that is not occupied by the other two), whereas communities in which *I. setosa* is absent should present a higher degree of redundancy. Finally, communities in which *I. setosa* is present, but in low abundances, should display intermediate values of redundancy.
+
+
+```{r echo=T, fig.width = 7, fig.height = 5}
+FRed_iris <- redundancy(TPDc = TPDc_iris)
+
+plotTPD(TPD = TPDc_iris, leg.text = paste(names(FRed_iris$redundancy),
+  round(FRed_iris$redundancy, 3), sep="; FRed="))
+```
+
+`redundancy` works as we expected; Comm.5, composed of two totally distinct species has no functional redundancy at all. Comm.1, dominated by a functionally unique species, and with low abundance of two similar species, has a very low value of redundancy (`r round(FRed_iris$redundancy[1],3)`. On the opposite extreme, Comm.2, composed by two similar species, has a rather high value of redundancy. Note that redundancy, as defined here, is bounded between 0 and the number of species that compose the community (indicated in `FRed_iris$richness`) minus 1.
+
+<a name="Grupo 2b"></a>
+
+### 2.b. Indices for multiple units
+
+####Partition of functional diversity with Rao (`dissim` + `Rao`)
+
+When the interest of the study lies on the spatial or temporal structure of functional diversity, it is often useful to partition the total diversity of all the considered communities ($\gamma$ diversity) into its within-communities ($\alpha$) and between-communities ($\beta$) components. The Rao index of functional diversity is a very good alternative to perform this partition (see de Bello et al. 2010 for technical details regarding the definition of Rao as well as mathematical guidelines for correctly performing this partition). Here, it suffices to say that the Rao index requires a characterization of the functional dissimilarities between all the species/populations in the considered group of communities. 
+
+As we have seen before, these dissimilarities can be easily estimated using the `dissim` function. This function returns an object of class `OverlapDiss`, which should be fed to the function `Rao`, along with the TPDc's of the communities (calculated with the function `TPDc`). We are going to rely once again in the `iris`dataset to illustrate the use of `Rao`. Imagine a group of communities situated along an environmental gradient. Suppose that *I. setosa* dominates in the first part of the gradient, where individuals of *I. virginica* cannot survive, and the opposite happens in the other extreme of the gradient. *I. versicolor*, which have intermediate traits can live everywhere, but its abundance maximizes in the intermediate part of the gradient. Let us create 5 communities along that gradient:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+TPDs_iris <- TPDs(species = sp_iris, traits_iris, alpha=0.95)
+
+abundances_comm_iris <- matrix(c(c(0.9,  0.1, 0), # setosa dominates 
+                                 c(0.4,  0.5, 0.1 ), 
+                                 c(0.15, 0.7, 0.15), #versicolor dominates
+                                 c(0.1,  0.5, 0.4),
+                                 c(0,    0.1, 0.9)), #virginica dominates
+                            ncol = 3, byrow = TRUE, dimnames = list(paste0("Comm.",1:5),
+                            unique(iris$Species)))
+TPDc_iris <- TPDc( TPDs = TPDs_iris, sampUnit = abundances_comm_iris)
+
+plotTPD(TPD = TPDc_iris, nRowCol = c(1,5))
+
+dissim_iris_sp <- dissim(TPDs = TPDs_iris)
+```
+
+Once that `TPDc_iris` and `dissim_iris_sp` are defined, we can proceed to use `Rao`:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+Rao_iris <- Rao(diss = dissim_iris_sp, TPDc = TPDc_iris)
+```
+
+`Rao_iris` contains a few elements with interesting information about our communities. For instance, `Rao_iris$alpha_eqv` contains the alpha diversity of each community, expressed in equivalent numbers. Note that for a correct partition of gamma diversity into its beta and alpha components, these alpha values do not correspond exactly with the ones that would have been calculated if each community would have been considered as an isolated unit (see de Bello et al. 2010 for details on this). If we want to have alpha expressed that way, we need to set the argument 'regional = FALSE`:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+Rao_iris_noReg <- Rao(diss = dissim_iris_sp, TPDc = TPDc_iris, regional=F)
+```
+
+Here (`Rao_iris_noReg$alpha_eqv`), we see that Comm.2 is the most diverse, with more than 2 equivalent species, whereas Comm.5, with only two very-similar species has the lowest alpha diversity.
+
+The studied communities have a gamma diversity of `Rao_iris$gamma_eqv=` `r round(Rao_iris$gamma_eqv, 3)` equivalent species, and the beta diversity is `Rao_iris$beta_prop=` `r round(Rao_iris$beta_prop,2)`%. `Rao_iris$pairwise$beta_prop` is where we would have to look if we were interested in the differences between pairs of communities:
+
+```{r echo=T, fig.width = 7, fig.height = 3}
+Rao_iris$pairwise$beta_prop
+```
+
+This confirms that communities that are further away in the gradient from each other (e.g. Comm.1 and Comm.5) are more functionally dissimilar than communities that are in more similar environmental conditions (eg. Comm 4 and Comm.5).
+
+----------------
+
+This vignette has been built using `r R.version.string` with the packages `TPD` `r packageVersion(pkg = "TPD")`, `ggplot2` `r packageVersion(pkg = "ggplot2")`, `gridExtra` `r packageVersion(pkg = "gridExtra")`, and `ks` `r packageVersion(pkg = "ks")`
+
+Version:
+```{r version, eval = TRUE, echo = FALSE, results='asis'}
+mi.tiempo <- Sys.time()
+mi.tiempo
+```
