@@ -13,11 +13,11 @@
 #' @param leg.pos Character, indicating the location of the legend in the plot. Possible values are: "bottomright", "bottom", "bottomleft", "left", "topleft", "top", "topright", "right" and "center". Defaults to "topright".
 #' @param leg.cex Numeric, indicating the character expansion factor relative to current par("cex") for the text of the legend.
 #'
-#'   @examples
+#' @examples
 #' # 1.  Compute the TPDs of five different species. SP3 is in the center of
 #' #   the trait space, and the rest of species in the corners
 #' set.seed(1)
-#' nind <- 50
+#' nind <- 10
 #' species_ex <- c(rep("SP1",nind), rep("SP2",nind), rep("SP3",nind),
 #'  rep("SP4",nind), rep("SP5",nind))
 #' traits_ex <- data.frame(trait1 = c(rnorm(nind, 10, 3),
@@ -30,29 +30,28 @@
 #'                                    rnorm(nind, 15, 3),
 #'                                    rnorm(nind, 10, 3),
 #'                                    rnorm(nind, 20, 3)))
+#' \dontrun{
 #' species_TPDs_2D <- TPDs (species = species_ex, traits = traits_ex)
 #' # Plot all species
 #' plotTPD(species_TPDs_2D)
 #' # Plot only species 3
 #' plotTPD(species_TPDs_2D, whichPlot = 3)
-#'
+#' }
 #' #1 dimension case:
 #' species_TPDs_1D <- TPDs (species = species_ex, traits = traits_ex$trait1)
 #' plotTPD(species_TPDs_1D)
 #'
 #' #Now, let us plot communities (TPDc)
-#' #2. Five different communities with different abundances of each species
+#' #2. three different communities with different abundances of each species
 #' abundances_ex <- matrix(c(c(0.05, 0.05, 0.8,  0.05, 0.05),
 #'                           c(0.9,  0,    0,    0,    0.1 ),
-#'                           c(0,    0,    1,    0,    0   ),
-#'                           c(0.2,  0.2,  0.2,  0.2,  0.2 ),
-#'                           c(0.8,  0.05, 0.05, 0.05, 0.05)),
-#'                    ncol = 5, byrow = TRUE, dimnames = list(paste0("Comm.",1:5),
+#'                           c(0,    0,    1,    0,    0   )),
+#'                    ncol = 5, byrow = TRUE, dimnames = list(paste0("Comm.",1:3),
 #'                      unique(species_ex)))
-#'
+#' \dontrun{
 #' example_TPDc_2D <- TPDc (TPDs = species_TPDs_2D, sampUnit = abundances_ex)
 #' plotTPD(example_TPDc_2D)
-#'
+#' }
 #' example_TPDc_1D <- TPDc (TPDs = species_TPDs_1D, sampUnit = abundances_ex)
 #' plotTPD(example_TPDc_1D)
 #'

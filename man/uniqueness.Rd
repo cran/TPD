@@ -13,8 +13,11 @@ uniqueness(TPDs = NULL, TPDc = NULL)
 }
 \value{
 \code{uniqueness} returns a matrix, with the communities in rows and the species in columns. The values in the matrix represent the functional uniqueness of each species in each community. Very unique species will have values close to 1, whereas non-unique species will have values close to 0.
-
- @examples
+}
+\description{
+\code{uniqueness} estimates the functional uniqueness of species, communities by comparing the TPD of lower  levels (i.e. species), with that of higher levels (i.e. communities). TPD's are compared by means of overlap. High overlap means low uniqueness (i.e. the species traits are frequent in the community), whereas low overlap means high uniqueness. Uniqueness is then estimated as 1-overlap. The function is hence basically the same as 'dissim', with some slight modifications. Despite functional uniqueness can be estimated at any scale, current implementation is limited to species within communities (although communities can be easily created to represent regions, or regional pools of species).
+}
+\examples{
 # 1.  Compute the TPDs of three different species
 traits_iris <- iris[, c("Sepal.Length", "Sepal.Width")]
 sp_iris <- iris$Species
@@ -30,7 +33,5 @@ example_TPDc <- TPDc (TPDs = example_TPDs, sampUnit = example_abundances)
 
 #3. Calculate the uniqueness of each species in each community
 example_uniqueness <- uniqueness (TPDs = example_TPDs, TPDc = example_TPDc)
-}
-\description{
-\code{uniqueness} estimates the functional uniqueness of species, communities by comparing the TPD of lower  levels (i.e. species), with that of higher levels (i.e. communities). TPD's are compared by means of overlap. High overlap means low uniqueness (i.e. the species traits are frequent in the community), whereas low overlap means high uniqueness. Uniqueness is then estimated as 1-overlap. The function is hence basically the same as 'dissim', with some slight modifications. Despite functional uniqueness can be estimated at any scale, current implementation is limited to species within communities (although communities can be easily created to represent regions, or regional pools of species).
+
 }

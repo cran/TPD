@@ -27,7 +27,7 @@
 #'    the primary components of functional diversity. \emph{Oikos},
 #'    111: 112--118.
 #'
-#'   @examples
+#' @examples
 #' # 1.  Compute the TPDs of five different species. SP3 is in the center of
 #' #   the trait space, and the rest of species in the corners
 #' set.seed(1)

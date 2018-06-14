@@ -7,7 +7,7 @@
 #'
 #' @return \code{uniqueness} returns a matrix, with the communities in rows and the species in columns. The values in the matrix represent the functional uniqueness of each species in each community. Very unique species will have values close to 1, whereas non-unique species will have values close to 0.
 #'
-#'  @examples
+#' @examples
 #' # 1.  Compute the TPDs of three different species
 #' traits_iris <- iris[, c("Sepal.Length", "Sepal.Width")]
 #' sp_iris <- iris$Species

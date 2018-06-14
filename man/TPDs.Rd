@@ -30,8 +30,11 @@ TPDs(species, traits, samples = NULL, weight = NULL, alpha = 0.95,
 \emph{data:} A list containing information used to perform the calculations, including the coordinates --in trait space-- in which the TPD function has been evaluated, the volume --in trait units-- of each cell of the grid, the length of each edges of the cells of the grid, the original trait data, the names of the species, the name of the populations in case sample is not NULL, the alpha level specified by the user, the traits of the individuals of each population, and the type of TPDs calculated.
 
  \emph{TPDs:} A list, with one element per species or population, containing the probability associated to each cell of the grid in which the trait space has been divided.
-
- @examples
+}
+\description{
+\code{TPDs} computes the trait probability density functions (TPD) of populations. A TPD for each population is calculated using kernel density estimators around each trait value provided \code{TPDs} can be used for single or multiple traits (up to four traits at the present time).
+}
+\examples{
 
 # 1.  Compute the TPDs of three different species
 traits_iris <- iris[, c("Sepal.Length", "Sepal.Width")]
@@ -42,7 +45,5 @@ example_sp <- TPDs(species = sp_iris, traits = traits_iris)
 samples_ex <- rep(c(rep(1, 25), rep(2, 25)), 3)
 example_pop <- TPDs (species = sp_iris, traits = traits_iris,
      samples = samples_ex)
-}
-\description{
-\code{TPDs} computes the trait probability density functions (TPD) of populations. A TPD for each population is calculated using kernel density estimators around each trait value provided \code{TPDs} can be used for single or multiple traits (up to four traits at the present time).
+
 }

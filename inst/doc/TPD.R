@@ -201,8 +201,8 @@ legend("topright", bty = "n", lwd = 2, col = 1:length(TPDs_iris_d1$TPDs),
   legend = names(TPDs_iris_d1$TPDs))
 
 ## ----echo = T------------------------------------------------------------
-dissim_iris_d1 <- dissim(TPDs = TPDs_iris_d1)
-dissim_iris_d1$species$dissimilarity
+dissim_iris_d1 <- dissim(TPDs_iris_d1)
+dissim_iris_d1$populations$dissimilarity
 
 ## ----echo = T, fig.width = 7, fig.height = 3-----------------------------
 abundances_comm_iris <- matrix(c(c(0.9, 0.1, 0), #I. setosa dominates; virg. absent 
@@ -212,7 +212,7 @@ abundances_comm_iris <- matrix(c(c(0.9, 0.1, 0), #I. setosa dominates; virg. abs
                           unique(iris$Species))) 
 TPDc_iris <- TPDc( TPDs = TPDs_iris, sampUnit = abundances_comm_iris) 
 plotTPD(TPDc_iris, nRowCol = c(1,3))
-dissim_iris_comm <- dissim(TPDc = TPDc_iris)
+dissim_iris_comm <- dissim(TPDc_iris)
 dissim_iris_comm$communities$dissimilarity
 
 ## ----echo = T, fig.width = 7, fig.height = 3-----------------------------
@@ -250,7 +250,7 @@ TPDc_iris <- TPDc( TPDs = TPDs_iris, sampUnit = abundances_comm_iris)
 
 plotTPD(TPD = TPDc_iris, nRowCol = c(1,5))
 
-dissim_iris_sp <- dissim(TPDs = TPDs_iris)
+dissim_iris_sp <- dissim(TPDs_iris)
 
 ## ----echo=T, fig.width = 7, fig.height = 3-------------------------------
 Rao_iris <- Rao(diss = dissim_iris_sp, TPDc = TPDc_iris)

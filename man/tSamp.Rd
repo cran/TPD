@@ -15,7 +15,11 @@ tSamp(TPDc = NULL, TPDs = NULL, size = 1)
 }
 \value{
 \code{tSamp} returns a list containing sampled trait values for each community of TPDc or species/populations from TPDs.
- @examples
+}
+\description{
+\code{tSamp} samples (with replacement) trait values from populations, species or communities. The probability of sampling each trait --or combination of traits in multidimensional cases-- is proportional to the value of TPDs or TPDc for the corresponding cell (the trait space is divided in a grid composed of cells, see \code{\link{TPDs}} for further information).
+}
+\examples{
 # 1.  Compute the TPDs of three different species
 traits_iris <- iris[, c("Sepal.Length", "Sepal.Width")]
 sp_iris <- iris$Species
@@ -32,7 +36,4 @@ example_TPDc <- TPDc (TPDs = example_TPDs, sampUnit = example_abundances)
 #3. Sample 1,000 trait values from each species and community
 example_sampling <- tSamp(TPDc = example_TPDc, TPDs = example_TPDs,
                                  size = 1000)
-}
-\description{
-\code{tSamp} samples (with replacement) trait values from populations, species or communities. The probability of sampling each trait --or combination of traits in multidimensional cases-- is proportional to the value of TPDs or TPDc for the corresponding cell (the trait space is divided in a grid composed of cells, see \code{\link{TPDs}} for further information).
 }

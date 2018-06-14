@@ -7,7 +7,7 @@
 #' @param size Non-negative integer giving the number of observations to choose. Defaults to 1.
 #'
 #' @return \code{tSamp} returns a list containing sampled trait values for each community of TPDc or species/populations from TPDs.
-#'  @examples
+#' @examples
 #' # 1.  Compute the TPDs of three different species
 #' traits_iris <- iris[, c("Sepal.Length", "Sepal.Width")]
 #' sp_iris <- iris$Species

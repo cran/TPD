@@ -17,8 +17,11 @@ TPDc(TPDs, sampUnit)
   \emph{data:} A list containing information used to perform the calculations, including the coordinates --in trait space-- in which the TPD function has been evaluated, the volume --in trait units-- of each cell of the grid, the length of each edges of the cells of the grid, the original trait data, the names of the species, the name of the populations in case sample is not NULL, the alpha level specified by the user, the traits of the individuals of each population, the type of TPDs calculates, which can be either "species" or "populations" depending on whether sample is or not NULL.
 
    \emph{TPDc:} A list containing information related with the TPDc of each community, including the species present in each community, the abundance of those species in each community, the abundance-rescaled TPDs of each species in each community, and the TPDc of each community, which is the probability associated to each cell of the grid in in which the trait space has been divided.
-
- @examples
+}
+\description{
+\code{TPDc} computes the trait probability density functions (TPD) of communities, for single or multiple traits. A TPDc for each community is calculated based on the TPDs of the species (or populations) present in the community and their relative abundances. The TPDs of all species should have been calculated beforehand using the \code{\link{TPDs}} function.
+}
+\examples{
 # 1.  Compute the TPDs of three different species
 traits_iris <- iris[, c("Sepal.Length", "Sepal.Width")]
 sp_iris <- iris$Species
@@ -31,7 +34,4 @@ example_abundances <- matrix(c(c(0.5, 0.3, 0.2,
                          ncol = 3, byrow = TRUE, dimnames = list(paste0("Comm.",1:3),
                          unique(iris$Species)))
 example_TPDc <- TPDc (TPDs = example_TPDs, sampUnit = example_abundances)
-}
-\description{
-\code{TPDc} computes the trait probability density functions (TPD) of communities, for single or multiple traits. A TPDc for each community is calculated based on the TPDs of the species (or populations) present in the community and their relative abundances. The TPDs of all species should have been calculated beforehand using the \code{\link{TPDs}} function.
 }

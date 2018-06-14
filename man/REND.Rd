@@ -32,13 +32,7 @@ populations or species.}
    the considered communities; therefore results are independent of any
    underlying feature of the species that compose the communities.
 }
-\references{
-Mason, NWH, Mouillot, D, Lee, WG and Wilson, JB (2005),
-   Functional richness, functional evenness and functional divergence:
-   the primary components of functional diversity. \emph{Oikos},
-   111: 112--118.
-
-  @examples
+\examples{
 # 1.  Compute the TPDs of five different species. SP3 is in the center of
 #   the trait space, and the rest of species in the corners
 set.seed(1)
@@ -67,4 +61,10 @@ abundances_ex <- matrix(c(0.05, 0.05, 0.8,  0.05, 0.05, # 1. Low divergence
 example_TPDc <- TPDc (TPDs = species_TPDs, sampUnit = abundances_ex)
 #3. Estimate functional richness, evenness and divergence
 example_RicEveDiv <- REND (TPDc = example_TPDc)
+}
+\references{
+Mason, NWH, Mouillot, D, Lee, WG and Wilson, JB (2005),
+   Functional richness, functional evenness and functional divergence:
+   the primary components of functional diversity. \emph{Oikos},
+   111: 112--118.
 }

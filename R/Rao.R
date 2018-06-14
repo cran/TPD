@@ -18,7 +18,7 @@
 #' sp_iris <- iris$Species
 #' TPDs_iris <- TPDs(species = sp_iris, traits_iris)
 #' #2. Compute the dissimilarity between the three species:
-#' dissim_iris_sp <- dissim(TPDs = TPDs_iris)
+#' dissim_iris_sp <- dissim(TPDs_iris)
 
 #' #3. Compute the TPDc of five different communities:
 #' abundances_comm_iris <- matrix(c(c(0.9,  0.1, 0), # setosa dominates
@@ -55,14 +55,14 @@ Rao <- function(diss = NULL, TPDc = NULL, regional = TRUE ) {
   type <- TPDc$data$type
   if (type == "One population_One species" |
       type == "One population_Multiple species") {
-    if (is.null(diss$species)) {
+    if (is.null(diss$populations)) {
       stop("TPDc contains information at the ", type," level, whereas diss
           contains information at the population level (more than one population
           for some species). Recalculate either TPDc or diss so that their
           levels match")
     }
     sp_in_samples <- unique(TPDc$data$species)
-    diss <- diss$species$dissimilarity
+    diss <- diss$populations$dissimilarity
     sp_in_diss <- colnames(diss)
     if (!all(sp_in_samples %in% sp_in_diss)) {
       stop("There are some ", type, " in TPDc that are not present in diss")
@@ -92,11 +92,11 @@ Rao <- function(diss = NULL, TPDc = NULL, regional = TRUE ) {
     if (!all(pop_in_samples %in% pop_in_diss)) {
       stop("There are some ", type, " in TPDc that are not present in diss")
     }
-    samples_matrix <- matrix(0, nrow = length(TPDc$TPDc$species),
+    samples_matrix <- matrix(0, nrow = length(TPDc$TPDc$populations),
       ncol = length(pop_in_samples),
-      dimnames = list(names(TPDc$TPDc$species), pop_in_samples))
-    for (i in 1:length(TPDc$TPDc$species)) {
-      species_aux <- TPDc$TPDc$species[[i]]
+      dimnames = list(names(TPDc$TPDc$populations), pop_in_samples))
+    for (i in 1:length(TPDc$TPDc$populations)) {
+      species_aux <- TPDc$TPDc$populations[[i]]
       abundances_aux <- TPDc$TPDc$abundances[[i]]
       for (j in 1:length(species_aux)){
         samples_matrix[i, species_aux[j]] <- abundances_aux[j]

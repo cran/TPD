@@ -4,15 +4,13 @@
 \alias{dissim}
 \title{Overlap-Based Functional Dissimilarity and its Decomposition}
 \usage{
-dissim(TPDc = NULL, TPDs = NULL)
+dissim(x = NULL)
 }
 \arguments{
-\item{TPDc}{An object of class "TPDcomm", generated with the \code{\link{TPDc}} function, containing the TPDc of the considered communities.}
-
-\item{TPDs}{An object of class "TPDsp", generated with the \code{\link{TPDs}} function, containing the TPDs of the considered populations or species}
+\item{x}{Either an object of class "TPDcomm", generated with the \code{\link{TPDc}} function, containing the TPDc of the considered communities, or an object of class "TPDsp", generated with the \code{\link{TPDs}} or \code{\link{TPDsMean}} functions, containing the TPDs of the considered populations or species.}
 }
 \value{
-\code{dissim} returns lists for populations, species or communities, depending on the input data. These lists contain the overlap-based functional dissimilarity between all pairs of populations/species/communities, along with the decomposition of dissimilarity between shared and non-shared trait volume.
+\code{dissim} returns the overlap-based functional dissimilarity between all pairs of populations/species/communities, along with the decomposition of dissimilarity between shared and non-shared trait volume.
 }
 \description{
 \code{dissim} calculates the  functional  dissimilarity between pairs of communities or populations, as well as its decomposition into shared and non-shared trait volume.
@@ -32,5 +30,6 @@ abundances_comm_iris <- matrix(c(c(0.9, 0.1, 0), #I. setosa dominates
 TPDc_iris <- TPDc(TPDs = TPDs_iris, sampUnit = abundances_comm_iris)
 
 #3. Estimate functional dissimilarity
-example_dissimilarity <- dissim (TPDc = TPDc_iris, TPDs = TPDs_iris)
+example_dissimilarity_comm <- dissim (TPDc_iris)
+example_dissimilarity_sps <- dissim (TPDs_iris)
 }

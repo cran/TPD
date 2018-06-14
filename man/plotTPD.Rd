@@ -22,13 +22,19 @@ plotTPD(TPD, whichPlot = NULL, nRowCol = NULL, color1 = "grey60",
 
 \item{leg.pos}{Character, indicating the location of the legend in the plot. Possible values are: "bottomright", "bottom", "bottomleft", "left", "topleft", "top", "topright", "right" and "center". Defaults to "topright".}
 
-\item{leg.cex}{Numeric, indicating the character expansion factor relative to current par("cex") for the text of the legend.
-
-  @examples
+\item{leg.cex}{Numeric, indicating the character expansion factor relative to current par("cex") for the text of the legend.}
+}
+\description{
+\code{plotTPD} plots a TPD object (created with either TPDs ot TPDc) of 1 or 2 dimensions. In the 1-dimension case, \code{plotTPD} displays the trait in the x-axis and the probability associated to each trait value in the y-axis. In the 2-dimensions case, \code{plotTPD} displays traits in the x- and y-axes, and probabilities are indicated by a gradient of colors. The function yields a panel for each TPD calculated (one for each species or population in the case of TPDs and one for each community in the case of TPDc).
+}
+\details{
+In the 2-dimensions case, \code{plotTPD} requires the packages \code{ggplot2} and \code{gridExtra} in order to work.
+}
+\examples{
 # 1.  Compute the TPDs of five different species. SP3 is in the center of
 #   the trait space, and the rest of species in the corners
 set.seed(1)
-nind <- 50
+nind <- 10
 species_ex <- c(rep("SP1",nind), rep("SP2",nind), rep("SP3",nind),
  rep("SP4",nind), rep("SP5",nind))
 traits_ex <- data.frame(trait1 = c(rnorm(nind, 10, 3),
@@ -41,35 +47,29 @@ traits_ex <- data.frame(trait1 = c(rnorm(nind, 10, 3),
                                    rnorm(nind, 15, 3),
                                    rnorm(nind, 10, 3),
                                    rnorm(nind, 20, 3)))
+\dontrun{
 species_TPDs_2D <- TPDs (species = species_ex, traits = traits_ex)
 # Plot all species
 plotTPD(species_TPDs_2D)
 # Plot only species 3
 plotTPD(species_TPDs_2D, whichPlot = 3)
-
+}
 #1 dimension case:
 species_TPDs_1D <- TPDs (species = species_ex, traits = traits_ex$trait1)
 plotTPD(species_TPDs_1D)
 
 #Now, let us plot communities (TPDc)
-#2. Five different communities with different abundances of each species
+#2. three different communities with different abundances of each species
 abundances_ex <- matrix(c(c(0.05, 0.05, 0.8,  0.05, 0.05),
                           c(0.9,  0,    0,    0,    0.1 ),
-                          c(0,    0,    1,    0,    0   ),
-                          c(0.2,  0.2,  0.2,  0.2,  0.2 ),
-                          c(0.8,  0.05, 0.05, 0.05, 0.05)),
-                   ncol = 5, byrow = TRUE, dimnames = list(paste0("Comm.",1:5),
+                          c(0,    0,    1,    0,    0   )),
+                   ncol = 5, byrow = TRUE, dimnames = list(paste0("Comm.",1:3),
                      unique(species_ex)))
-
+\dontrun{
 example_TPDc_2D <- TPDc (TPDs = species_TPDs_2D, sampUnit = abundances_ex)
 plotTPD(example_TPDc_2D)
-
+}
 example_TPDc_1D <- TPDc (TPDs = species_TPDs_1D, sampUnit = abundances_ex)
-plotTPD(example_TPDc_1D)}
-}
-\description{
-\code{plotTPD} plots a TPD object (created with either TPDs ot TPDc) of 1 or 2 dimensions. In the 1-dimension case, \code{plotTPD} displays the trait in the x-axis and the probability associated to each trait value in the y-axis. In the 2-dimensions case, \code{plotTPD} displays traits in the x- and y-axes, and probabilities are indicated by a gradient of colors. The function yields a panel for each TPD calculated (one for each species or population in the case of TPDs and one for each community in the case of TPDc).
-}
-\details{
-In the 2-dimensions case, \code{plotTPD} requires the packages \code{ggplot2} and \code{gridExtra} in order to work.
+plotTPD(example_TPDc_1D)
+
 }

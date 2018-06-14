@@ -2,10 +2,9 @@
 #'
 #' \code{dissim} calculates the  functional  dissimilarity between pairs of communities or populations, as well as its decomposition into shared and non-shared trait volume.
 #'
-#' @param TPDc An object of class "TPDcomm", generated with the \code{\link{TPDc}} function, containing the TPDc of the considered communities.
-#' @param TPDs An object of class "TPDsp", generated with the \code{\link{TPDs}} function, containing the TPDs of the considered populations or species
-
-#' @return \code{dissim} returns lists for populations, species or communities, depending on the input data. These lists contain the overlap-based functional dissimilarity between all pairs of populations/species/communities, along with the decomposition of dissimilarity between shared and non-shared trait volume.
+#' @param x Either an object of class "TPDcomm", generated with the \code{\link{TPDc}} function, containing the TPDc of the considered communities, or an object of class "TPDsp", generated with the \code{\link{TPDs}} or \code{\link{TPDsMean}} functions, containing the TPDs of the considered populations or species.
+#'
+#' @return \code{dissim} returns the overlap-based functional dissimilarity between all pairs of populations/species/communities, along with the decomposition of dissimilarity between shared and non-shared trait volume.
 #'
 #' @examples
 #' # 1.  Compute the TPDs of three different species:
@@ -22,24 +21,34 @@
 #' TPDc_iris <- TPDc(TPDs = TPDs_iris, sampUnit = abundances_comm_iris)
 #'
 #' #3. Estimate functional dissimilarity
-#' example_dissimilarity <- dissim (TPDc = TPDc_iris, TPDs = TPDs_iris)
+#' example_dissimilarity_comm <- dissim (TPDc_iris)
+#' example_dissimilarity_sps <- dissim (TPDs_iris)
+
 
 #' @export
-dissim <- function(TPDc = NULL, TPDs = NULL) {
+dissim <- function(x = NULL) {
 	# INITIAL CHECKS:
 	# 1. At least one of TPDc or TPDs must be supplied.
-	if (is.null(TPDc) & is.null(TPDs)) {
-		stop("At least one of 'TPDc' or 'TPDs' must be supplied")
+	if (class(x) == "TPDcomm"){
+	  TPDType<-"Communities"
+	  TPDc <- x
+	} else{
+	  if (class(x) == "TPDsp"){
+	    TPDType<-"Populations"
+	    TPDs <- x
+	  } else{
+	    stop("x must be an object of class TPDcomm or TPDsp")
+	  }
 	}
 	results <- list()
 	Calc_dissim <- function(x) {
 	  # 1. BetaO (functional dissimilarity)
 		results_samp <- list()
-		if (class(x) == "TPDcomm") {
+		if (TPDType == "Communities") {
 			TPD <- x$TPDc$TPDc
 			names_aux <- names(x$TPDc$TPDc)
 		}
-		if (class(x) == "TPDsp") {
+		if (TPDType == "Populations") {
 			TPD <- x$TPDs
 			names_aux <- names(x$TPDs)
 		}
@@ -85,19 +94,13 @@ dissim <- function(TPDc = NULL, TPDs = NULL) {
 	return(results_samp)
 	}
 	# IMPLEMENTATION
-	if (!is.null(TPDc)) {
+	if (TPDType == "Communities") {
 	  message("Calculating dissimilarities between ", length(TPDc$TPDc$TPDc)," communities. It might take some time")
-		results$communities <- Calc_dissim(TPDc)
+	  results$communities <- Calc_dissim(TPDc)
 	}
-	if (!is.null(TPDs)) {
-	  if (TPDs$data$type == "One population_One species" |
-	      TPDs$data$type == "One population_Multiple species") {
-	    message("Calculating dissimilarities between ", length(TPDs$TPDs)," species. It might take some time")
-	    results$species <- Calc_dissim(TPDs)
-		} else {
-		  message("Calculating dissimilarities between ", length(TPDs$TPDs)," populations. It might take some time")
-		  results$populations <- Calc_dissim(TPDs)
-		}
+	if (TPDType == "Populations") {
+    message("Calculating dissimilarities between ", length(TPDs$TPDs)," populations. It might take some time")
+	  results$populations <- Calc_dissim(TPDs)
 	}
 	class(results) <- "OverlapDiss"
 	return(results)

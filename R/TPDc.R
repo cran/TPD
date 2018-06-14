@@ -4,13 +4,14 @@
 #'
 #' @param TPDs An object of class "TPDsp" calculated with the function \code{\link{TPDs}}, containing the TPDs of all the species or populations present in the communities whose TPDc is going to be computed.
 #' @param sampUnit A matrix or data.frame containing the abundances of each species (in columns) in each community (in rows). The names of the species must be given in 'colnames(sampUnit)', whereas the names of the species must appear in 'rownames(sampUnit)'. Species names must match the names of the species used to build the TPDs object provided. In addition, in the cases in which there are different populations of the same species, the names of the communities must also match the names of the 'samples' argument provided to TPDs. In case that there is some combination of species x community with abundance greater than 0 that is not present in 'TPDs', the function will fail. NA values are not allowed in the matrix nor in the row or column names.
-#'	@return \code{TPDc} returns an object of class "TPDcomm", which is a list containing the following components:
+#' 
+#' @return \code{TPDc} returns an object of class "TPDcomm", which is a list containing the following components:
 #'
 #'	  \emph{data:} A list containing information used to perform the calculations, including the coordinates --in trait space-- in which the TPD function has been evaluated, the volume --in trait units-- of each cell of the grid, the length of each edges of the cells of the grid, the original trait data, the names of the species, the name of the populations in case sample is not NULL, the alpha level specified by the user, the traits of the individuals of each population, the type of TPDs calculates, which can be either "species" or "populations" depending on whether sample is or not NULL.
 #'
 #'    \emph{TPDc:} A list containing information related with the TPDc of each community, including the species present in each community, the abundance of those species in each community, the abundance-rescaled TPDs of each species in each community, and the TPDc of each community, which is the probability associated to each cell of the grid in in which the trait space has been divided.
 #'
-#'  @examples
+#' @examples
 #' # 1.  Compute the TPDs of three different species
 #' traits_iris <- iris[, c("Sepal.Length", "Sepal.Width")]
 #' sp_iris <- iris$Species

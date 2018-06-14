@@ -29,7 +29,7 @@ traits_iris <- iris[, c("Sepal.Length", "Sepal.Width")]
 sp_iris <- iris$Species
 TPDs_iris <- TPDs(species = sp_iris, traits_iris)
 #2. Compute the dissimilarity between the three species:
-dissim_iris_sp <- dissim(TPDs = TPDs_iris)
+dissim_iris_sp <- dissim(TPDs_iris)
 #3. Compute the TPDc of five different communities:
 abundances_comm_iris <- matrix(c(c(0.9,  0.1, 0), # setosa dominates
                                  c(0.4,  0.5, 0.1 ),
