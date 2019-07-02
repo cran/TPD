@@ -4,8 +4,9 @@
 \alias{TPDsMean}
 \title{Creating TPDs without individual observations}
 \usage{
-TPDsMean(species, means, sds, covar = FALSE, alpha = 0.95, samples = NULL,
-  trait_ranges = NULL, n_divisions = NULL, tolerance = 0.05)
+TPDsMean(species, means, sds, covar = FALSE, alpha = 0.95,
+  samples = NULL, trait_ranges = NULL, n_divisions = NULL,
+  tolerance = 0.05)
 }
 \arguments{
 \item{species}{A vector containing the names of the species whose TPD is to be calculated.

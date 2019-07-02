@@ -142,7 +142,7 @@ plotTPD<- function(TPD, whichPlot = NULL, nRowCol = NULL, color1 = "grey60",
   }
   if (dimensions == 2) {
     if (length(whichPlot) > 1) {
-    message("Be patient, in the 2-dimensional case plots can take some time.\nIf you think it takes too long, consider reducing the number of plots using 'whichPlot'")
+    message("Be patient, in the 2-dimensional case, plots can take some time.\nIf you think it takes too long, consider reducing the number of plots using 'whichPlot'")
     }
     limx <- range(TPD_grid[, 1])
     limy <- range(TPD_grid[, 2])

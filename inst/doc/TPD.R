@@ -1,3 +1,10 @@
+## ---- include = FALSE----------------------------------------------------
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(TPD)
+library(ks)
+library(ggplot2)
+library(gridExtra)
+
 ## ----echo=FALSE, warning=FALSE, message = FALSE--------------------------
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 library(TPD)
@@ -86,13 +93,12 @@ TPDsMean_iris<- TPDsMean(species = names_iris, means = means_iris, sds = sds_iri
 plotTPD(TPD = TPDsMean_iris, nRowCol = c(1,3))
 
 ## ----echo=T--------------------------------------------------------------
-
 abundances_comm_iris <- matrix(c(c(0.5, 0.4, 0), #I. virginica absent
-                          c(0.0, 0.9,  0.1 ), #I. versic. dominates; setosa absent
-                          c(0.0, 0.1,  0.9 )), #I. virg. dominates; setosa absent
-                          ncol = 3, byrow = TRUE, dimnames = list(paste0("Comm.",1:3),
-                          unique(iris$Species))) 
-                 
+                                 c(0.0, 0.9,  0.1 ), #I. versic. dominates; setosa absent
+                                 c(0.0, 0.1,  0.9 )), #I. virg. dominates; setosa absent
+                               ncol = 3, byrow = TRUE, dimnames = list(paste0("Comm.",1:3),
+                                                                       unique(iris$Species))) 
+
 
 ## ----echo=T--------------------------------------------------------------
 TPDs_iris <- TPDs(species = sp_iris, traits_iris)
@@ -185,8 +191,8 @@ plotTPD(TPDc_iris, nRowCol = c(1,3))
 par(mfrow=c(1,3))
 for (i in 1:3){
   plot(Iris_comm_samp$communities_samples[[i]], pch = 16, cex = 0.6, 
-    xlim = range(TPDc_iris$data$evaluation_grid[[1]]),
-    ylim = range(TPDc_iris$data$evaluation_grid[[2]]))
+       xlim = range(TPDc_iris$data$evaluation_grid[[1]]),
+       ylim = range(TPDc_iris$data$evaluation_grid[[2]]))
 }
 
 ## ----echo = T, fig.width = 6, fig.height = 4-----------------------------
@@ -220,21 +226,21 @@ dissim_iris_comm$communities$P_shared
 dissim_iris_comm$communities$P_non_shared
 
 ## ----echo=T--------------------------------------------------------------
-TPDs_iris <- TPDs(species = sp_iris, traits_iris)
-abundances_comm_iris <- matrix(c(c(0.9,  0.05, 0.05), #I. setosa dominates 
-                                 c(0.0,  0.5,  0.5 ), #I. setosa absent
-                                 c(0.33, 0.33, 0.33), #Equal abundances
-                                 c(0.1,  0.45, 0.45), #Versicolor and virginica dominate
-                                 c(0.5,  0,    0.5)), #versicolor absent
-                          ncol = 3, byrow = TRUE, dimnames = list(paste0("Comm.",1:5),
-                          unique(iris$Species))) 
-TPDc_iris <- TPDc( TPDs = TPDs_iris, sampUnit = abundances_comm_iris) 
+  TPDs_iris <- TPDs(species = sp_iris, traits_iris)
+  abundances_comm_iris <- matrix(c(c(0.9,  0.05, 0.05), #I. setosa dominates 
+                                   c(0.0,  0.5,  0.5 ), #I. setosa absent
+                                   c(0.33, 0.33, 0.33), #Equal abundances
+                                   c(0.1,  0.45, 0.45), #Versicolor and virginica dominate
+                                   c(0.5,  0,    0.5)), #versicolor absent
+                                 ncol = 3, byrow = TRUE, dimnames = list(paste0("Comm.",1:5),
+                                                                         unique(iris$Species))) 
+  TPDc_iris <- TPDc( TPDs = TPDs_iris, sampUnit = abundances_comm_iris) 
 
 ## ----echo=T, fig.width = 7, fig.height = 5-------------------------------
-FRed_iris <- redundancy(TPDc = TPDc_iris)
-
-plotTPD(TPD = TPDc_iris, leg.text = paste(names(FRed_iris$redundancy),
-  round(FRed_iris$redundancy, 3), sep="; FRed="))
+  FRed_iris <- redundancy(TPDc = TPDc_iris)
+  
+  plotTPD(TPD = TPDc_iris, leg.text = paste(names(FRed_iris$redundancy),
+                                          round(FRed_iris$redundancy, 3), sep="; FRed="))
 
 ## ----echo=T, fig.width = 7, fig.height = 3-------------------------------
 TPDs_iris <- TPDs(species = sp_iris, traits_iris, alpha=0.95)

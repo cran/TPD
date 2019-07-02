@@ -2,8 +2,8 @@ Package: TPD
 Type: Package
 Title: Methods for Measuring Functional Diversity Based on Trait
         Probability Density
-Version: 1.0.0
-Date: 2018-06-13
+Version: 1.1.0
+Date: 2019-07-02
 Author: Carlos P. Carmona <perezcarmonacarlos@gmail.com>
 Maintainer: Carlos P. Carmona <perezcarmonacarlos@gmail.com>
 Description: Tools to calculate trait probability density functions (TPD) at
@@ -17,10 +17,10 @@ License: GPL-3
 LazyData: TRUE
 Depends: ggplot2 (>= 1.0.0), ks (>= 1.9.2)
 Imports: gridExtra (>= 0.9.1), mvtnorm (>= 0.8), graphics, stats
-Suggests: knitr, testthat
+Suggests: knitr, testthat, rmarkdown
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 NeedsCompilation: no
-Packaged: 2018-06-14 07:17:08 UTC; carlos
+Packaged: 2019-07-02 19:57:40 UTC; c.p.carmona
 Repository: CRAN
-Date/Publication: 2018-06-14 07:50:02 UTC
+Date/Publication: 2019-07-02 20:30:03 UTC

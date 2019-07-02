@@ -10,7 +10,7 @@ redundancy(TPDc = NULL)
 \item{TPDc}{An object of class "TPDcomm", generated with the \code{\link{TPDc}} function, containing the TPDc of the considered communities.}
 }
 \value{
-\code{redundancy} returns a list containing the functional redundancy values of all the communities from TDPc, along with the number of species of each community.
+\code{redundancy} returns a list containing the functional redundancy values of all the communities from TDPc, along with the number of species of each community. It also returns a vector with the values of relative redundancy (i.e. redundancy divided by richness minus one).
 }
 \description{
 \code{redundancy} calculates the functional redundancy of communities, considering single or multiple traits. The functional volume (indicated by Functional Richness) occupied by a community with high functional redundancy should not decrease substantially when some species are lost, and vice versa.

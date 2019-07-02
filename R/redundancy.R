@@ -3,7 +3,7 @@
 #' \code{redundancy} calculates the functional redundancy of communities, considering single or multiple traits. The functional volume (indicated by Functional Richness) occupied by a community with high functional redundancy should not decrease substantially when some species are lost, and vice versa.
 #'
 #' @param TPDc An object of class "TPDcomm", generated with the \code{\link{TPDc}} function, containing the TPDc of the considered communities.
-#' @return \code{redundancy} returns a list containing the functional redundancy values of all the communities from TDPc, along with the number of species of each community.
+#' @return \code{redundancy} returns a list containing the functional redundancy values of all the communities from TDPc, along with the number of species of each community. It also returns a vector with the values of relative redundancy (i.e. redundancy divided by richness minus one).
 #' @examples
 #' #1. Compute the TPDs of three different species.
 #' traits_iris <- iris[, c("Sepal.Length", "Sepal.Width")]
@@ -31,7 +31,7 @@ redundancy <- function(TPDc = NULL) {
 	}
   x <- TPDc
 	results <- list()
-	results$redundancy <- numeric()
+	results$redundancy <- results$richness <- numeric()
 	for (i in 1: length(x$TPDc$TPDc)) {
 		TPDc_aux <- x$TPDc$TPDc[[i]]
 		RTPDs_aux <- x$TPDc$RTPDs[[i]]
@@ -40,6 +40,8 @@ redundancy <- function(TPDc = NULL) {
 		results$redundancy[i] <- sum(M * TPDc_aux) - 1
 		results$richness[i] <- sum(x$TPDc$abundances[[i]] >0)
 	}
-	names(results$redundancy) <- names(results$richness) <- names(x$TPDc$TPDc)
+	results$redundancyRelative <- results$redundancy / (results$richness -1)
+	names(results$redundancy) <- names(results$richness) <-
+	  names(results$redundancyRelative) <- names(x$TPDc$TPDc)
 	return(results)
 }
